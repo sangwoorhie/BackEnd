@@ -1,7 +1,9 @@
+// npm run test:e2e app.e2e-spec
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -15,10 +17,23 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it('GET /', () => {
+    return request(app.getHttpServer()).get('/').expect(404).expect({
+      error: 'Not Found',
+      message: 'Cannot GET /',
+      statusCode: 404,
+    });
+  });
+
   it('/ (GET)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .query({ name: 'Jake' })
+      .expect('Hello Jake!');
   });
 });

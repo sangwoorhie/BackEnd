@@ -12,7 +12,7 @@ import { Challenger } from './challenger.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Post } from 'src/posts/entities/post.entity';
 
-@Entity()
+@Entity({ schema: 'outbody', name: 'challenges' })
 export class Challenge {
   @PrimaryGeneratedColumn()
   id: number;

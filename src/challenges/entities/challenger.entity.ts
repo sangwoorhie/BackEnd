@@ -9,7 +9,7 @@ import { Challenge } from './challenge.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Position } from '../challengerInfo';
 
-@Entity()
+@Entity({ schema: 'outbody', name: 'challengers' })
 export class Challenger {
   @PrimaryGeneratedColumn()
   id: number;

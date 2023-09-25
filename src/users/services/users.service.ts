@@ -68,7 +68,7 @@ export class UserService {
     return createUserResult;
   }
 
-  // E-mail 발송 (재용)
+  // E-mail 발송
   async sendEmail(body: any) {
     const { email } = body;
     if (!email) {
@@ -101,7 +101,7 @@ export class UserService {
     return verifyNumber;
   }
 
-  // 사용자 정보조회 (재용 수정)
+  // 사용자 정보조회
   async getUserById(userId: number) {
     const user: User = await this.usersRepository.getUserById(userId);
     if (!user) {
@@ -173,7 +173,7 @@ export class UserService {
     return { rest, followersInfo };
   }
 
-  // 내 정보 수정 (재용 수정)
+  // 내 정보 수정
   async updateUser(user: User, body: UserUpdateDto, file: Express.Multer.File) {
     const { birthday, description, name } = body;
 

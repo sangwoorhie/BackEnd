@@ -39,7 +39,7 @@ export class UserController {
     return createUserResult;
   }
 
-  // E-mail 인증 기능 (재용)
+  // E-mail 인증 기능
   // POST http://localhost:3000/user/signup/email
   @Post('/signup/email')
   async sendEmail(@Body() body: any) {
@@ -82,7 +82,7 @@ export class UserController {
     return await this.userService.updateUser(req.user, body, file);
   }
 
-  // 유저 password수정 (상우)
+  // 유저 password수정
   // PUT http://localhost:3000/user/me/password
   @Patch('/me/password')
   async updatePassword(@Body() passwordDto: UserPasswordDto, @Req() req: any) {

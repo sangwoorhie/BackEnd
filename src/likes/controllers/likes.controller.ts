@@ -14,7 +14,7 @@ import { LikesService } from '../services/likes.service';
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
 
-  // 오운완 좋아요 생성 (상우)
+  // 오운완 좋아요 생성
   // http://localhost:3000/challenge/:challengeId/post/:postId/like
   @Post('/:challengeId/post/:postId/like')
   async createLike(
@@ -32,7 +32,7 @@ export class LikesController {
     }
   }
 
-  // 오운완 게시글당 좋아요수 조회 (상우)
+  // 오운완 게시글당 좋아요수 조회
   // http://localhost:3000/challenge/:challengeId/post/:postId/like
   @Get('/:challengeId/post/:postId/like')
   async likesCount(
@@ -47,7 +47,7 @@ export class LikesController {
     return likeCount;
   }
 
-  // 오운완 좋아요 취소 (상우)
+  // 오운완 좋아요 취소
   // http://localhost:3000/challenge/:challengeId/post/:postId/like/:likeId
   @Delete('/:challengeId/post/:postId/like/:likeId')
   async deleteLike(

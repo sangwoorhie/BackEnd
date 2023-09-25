@@ -2,6 +2,7 @@ import { Controller, Post, UseGuards, Get, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../services/auth.service';
 import { Response } from 'express';
+import { GoogleRequest } from '../auth.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -43,37 +44,19 @@ export class AuthController {
     // res.cookie('Refresh', '', refreshOption);
   }
 
-  // 카카오 소셜 로그인 페이지 로딩 기능
-  // GET http://localhost:3000/auth/kakao
-  @Get('kakao')
-  @UseGuards(AuthGuard('kakao'))
-  async kakaoLogin() {
-    console.log('kakaoLogin');
-  }
+  // 구글 로그인
+  @Get()
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() _req: Request) {}
 
-  // 카카오 소셜 로그인기능
-  // GET http://localhost:3000/auth/kakao/oauth
-  @Get('kakao/oauth')
-  @UseGuards(AuthGuard('kakao'))
-  async kakaoLoginRedirect(@Req() req: any, @Res() res: Response) {
-    const token = await this.authService.kakaoLogin(req.user);
-    res.setHeader('authorization', token);
-    // res.redirect(`http://127.0.0.1:5500/dist/null.html`);
-  }
-
-  // 네이버 소셜 로그인 페이지 로딩 기능
-  // GET http://localhost:3000/auth/naver
-  @Get('naver')
-  @UseGuards(AuthGuard('naver'))
-  async naverLogin() {
-    console.log('naverLogin');
-  }
-
-  // 네이버 소셜 로그인기능
-  // GET http://localhost:3000/auth/naver/redirect
-  @Get('naver/redirect')
-  @UseGuards(AuthGuard('naver'))
-  async naverLoginRedirect(@Req() req: any) {
-    return await this.authService.naverLogin(req.user);
+  // 구글 콜백
+  @Get('callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(
+    @Req() req: GoogleRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.googleLogin(req, res);
+    return result;
   }
 }

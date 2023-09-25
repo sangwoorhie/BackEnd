@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import {
+  BadGatewayException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -10,6 +11,10 @@ import { User } from 'src/users/entities/user.entity';
 import { UserRepository } from 'src/users/repositories/users.repository';
 import { UserService } from 'src/users/services/users.service';
 import { Provider } from 'src/users/userInfo';
+import { GoogleRequest } from '../auth.interface';
+import { GoogleDto } from './../dto/googleLogin.dto';
+import { Response } from 'express';
+import * as cookie from 'cookie';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +32,14 @@ export class AuthService {
       throw new NotFoundException('존재하지 않는 회원입니다');
     }
 
+    if (
+      user.status === 'admin' &&
+      user.email === email &&
+      user.password === password
+    ) {
+      return user;
+    }
+
     const comparedPassword = await compare(password, user.password);
     if (!comparedPassword) {
       throw new NotAcceptableException('비밀번호가 일치하지 않습니다.');
@@ -35,6 +48,7 @@ export class AuthService {
     if (user && comparedPassword) {
       return user;
     }
+    return null;
   }
 
   // 로그인 (access토큰 발급)
@@ -116,36 +130,75 @@ export class AuthService {
     }
   }
 
-  // 카카오 로그인
-  async kakaoLogin(user) {
-    const existUser = await this.userRepository.getUserByEmail(user.email);
+  // 구글 로그인
+  async googleLogin(req: GoogleRequest, res: Response): Promise<GoogleDto> {
+    try {
+      const {
+        user: { email, name },
+      } = req;
+      let accessToken: string;
+      let refreshToken: string;
 
-    if (!existUser) {
-      const newKakaoUser = await this.userRepository.create({
-        name: user.nickname,
-        email: user.email,
-        gender: user.gender,
-        provider: Provider.KAKAO,
+      const findUser = await this.userRepository.getUserByEmail(email);
+      if (findUser && findUser.provider === Provider.LOCAL) {
+        throw new BadGatewayException(
+          '현재 계정으로 가입한 이메일이 존재합니다.',
+        );
+      }
+      if (!findUser) {
+        const googleUser = this.userRepository.create({
+          email,
+          name,
+          provider: Provider.GOOGLE,
+        });
+        await this.userRepository.save(googleUser);
+        const googleUserPayload = { id: googleUser.id };
+        accessToken = this.jwtService.sign(googleUserPayload, {
+          secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+          expiresIn: +this.configService.get(
+            'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+          ),
+        });
+        refreshToken = this.jwtService.sign(googleUserPayload, {
+          secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+          expiresIn: +this.configService.get(
+            'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
+          ),
+        });
+        res.cookie('refreshToken', refreshToken, {
+          expires: new Date(
+            Date.now() +
+              +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+          ),
+          httpOnly: true,
+        });
+        return {
+          accessToken,
+        };
+      }
+      // 구글 가입이 되어있는경우
+      const findUserPayload = { id: findUser.id };
+      accessToken = this.jwtService.sign(findUserPayload, {
+        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+        expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
       });
-
-      await this.userRepository.save(newKakaoUser);
-      const payload = { id: newKakaoUser.id };
-      const access_token = this.jwtService.sign(payload);
-      return access_token;
+      refreshToken = this.jwtService.sign(findUserPayload, {
+        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+      });
+      res.cookie('refreshToken', refreshToken, {
+        expires: new Date(
+          Date.now() +
+            +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        ),
+        httpOnly: true,
+      });
+      return {
+        accessToken,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new NotAcceptableException('구글 로그인에 실패하였습니다.');
     }
-    const payload = { id: existUser.id };
-    const access_token = this.jwtService.sign(payload);
-
-    return access_token;
-  }
-
-  // 네이버 로그인
-  async naverLogin(user) {
-    const existUser = await this.userRepository.getUserByEmail(user.email);
-    if (!existUser) {
-      // await this.userService.createUser();
-    }
-    const access_token = this.jwtService.sign(user);
-    return access_token;
   }
 }

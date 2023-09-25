@@ -19,6 +19,7 @@ import { Like } from 'src/likes/entities/like.entity';
 import { Post } from 'src/posts/entities/post.entity';
 import { Comment } from 'src/comments/entities/comment.entity';
 import { Exclude } from 'class-transformer';
+import { IsOptional } from 'class-validator';
 
 @Entity({ schema: 'outbody', name: 'users' })
 export class User {
@@ -35,6 +36,7 @@ export class User {
   email: string;
 
   @Column('varchar', { length: 100, nullable: true })
+  @IsOptional()
   password: string;
 
   @Column({ type: 'enum', enum: Gender })

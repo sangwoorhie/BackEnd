@@ -287,7 +287,7 @@ export class ChallengesService {
     await this.userRepository.updateUserIsInChallenge(userId, false);
   }
 
-  // 도전 방 입장 (재용)
+  // 도전 방 입장
   // 단순히 입장하는 개념이 아니라, 회원이 처음 입장하는 경우
   async joinChallenge(challengeId: number, currentUser: User) {
     const challenge = await this.challengesRepository.getChallenge(challengeId);

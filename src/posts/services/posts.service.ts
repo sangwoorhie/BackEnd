@@ -107,7 +107,7 @@ export class PostsService {
     return await this.postsRepository.getOnePost(postId);
   }
 
-  // 오운완 삭제 (상우)
+  // 오운완 삭제
   async deletePost(postId: number, user: User) {
     const post = await this.postsRepository.getOnePost(postId);
 

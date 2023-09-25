@@ -53,7 +53,7 @@ export class RecordsRepository extends Repository<Record> {
     return await this.findOne({ where: { id } });
   }
 
-  // 현재 사용자의 최신 기록 1개만 불러오기 (재용)
+  // 현재 사용자의 최신 기록 1개만 불러오기
   async getLatestUserRecord(id: number): Promise<Record> {
     return await this.findOne({
       where: { userId: id },

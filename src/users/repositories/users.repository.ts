@@ -70,13 +70,13 @@ export class UserRepository extends Repository<User> {
     return result;
   }
 
-  // 사용자 도전 참여 여부 수정 (재용)
+  // 사용자 도전 참여 여부 수정
   async updateUserIsInChallenge(userId: number, isInChallenge: boolean) {
     const result = await this.update({ id: userId }, { isInChallenge });
     return result;
   }
 
-  // 사용자 점수 수정 (재용)
+  // 사용자 점수 수정
   async updateUserPoint(userId: number, point: number) {
     const result = await this.update({ id: userId }, { point });
     return result;

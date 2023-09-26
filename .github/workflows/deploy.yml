@@ -79,7 +79,7 @@ jobs:
           cat .env
       - name: ✨ 패키지 설치
         working-directory: ./
-        run: npm install
+        run: npm i
 
       - name: ✨ 빌드 과정을 시작
         working-directory: ./

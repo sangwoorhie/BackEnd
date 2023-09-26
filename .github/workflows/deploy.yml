@@ -3,20 +3,16 @@ name: deploy
 on:
   push:
     branches: [main]
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-22.04.2
-
     strategy:
       matrix:
         node-version: [18.17.0]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
       - name: ✅ 체크아웃 source code.
         uses: actions/checkout@v3
-
       - name: ⚙️ ${{ matrix.node-version }} 버전의 노드로 세팅합니다.
         uses: actions/setup-node@v3
         with:
@@ -81,7 +77,6 @@ jobs:
           echo "KAKAO_REDIRECT=$KAKAO_REDIRECT" >> .env
           echo "TOKEN=$TOKEN" >> .env
           cat .env
-
       - name: ✨ 패키지 설치
         working-directory: ./
         run: npm install
@@ -109,4 +104,4 @@ jobs:
           --application-name Code-Deploy
           --deployment-config-name CodeDeployDefault.OneAtATime
           --deployment-group-name dev
-          --s3-location bucket=wildbody,bundleType=zip,key=verdantjuly.zip
+          --s3-location bucket=wildbody,bundleType=zip,key=wildbody.zip

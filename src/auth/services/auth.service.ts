@@ -47,7 +47,7 @@ export class AuthService {
       throw new NotAcceptableException('비밀번호가 일치하지 않습니다.');
     }
 
-    if (user && comparedPassword) {
+    if (user.status === 'normal' && comparedPassword) {
       return user;
     }
     return null;

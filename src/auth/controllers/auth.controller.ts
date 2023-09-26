@@ -2,7 +2,7 @@ import { Controller, Post, UseGuards, Get, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../services/auth.service';
 import { Response } from 'express';
-import { GoogleRequest } from '../auth.interface';
+import { GoogleRequest, KakaoRequest } from '../auth.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -26,24 +26,6 @@ export class AuthController {
     return { userId, status, accessToken, refreshToken };
   }
 
-  // 로그아웃
-  // POST http://localhost:3000/auth/logout
-  @UseGuards(AuthGuard('local'))
-  @Post('logout')
-  async logout(@Req() req: any, @Res({ passthrough: true }) res: Response) {
-    // const { accessOption, refreshOption } = this.authService.logout();
-    await this.authService.removeRefreshToken(req.user.id);
-
-    // res.clearCookie('accessToken');
-    // res.clearCookie('refreshToken');
-    return res.send({
-      message: 'logout success',
-    });
-
-    // res.cookie('Authentication', '', accessOption);
-    // res.cookie('Refresh', '', refreshOption);
-  }
-
   // 구글 로그인
   @Get()
   @UseGuards(AuthGuard('google'))
@@ -56,7 +38,23 @@ export class AuthController {
     @Req() req: GoogleRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.googleLogin(req, res);
-    return result;
+    const googleLogin = await this.authService.googleLogin(req, res);
+    return googleLogin;
+  }
+
+  // 카카오 로그인
+  @Get()
+  @UseGuards(AuthGuard('kakao'))
+  async KakaoAuth(@Req() _req: Request) {}
+
+  // 카카오 콜백
+  @Get('callback')
+  @UseGuards(AuthGuard('kakao'))
+  async KakaoAuthCallback(
+    @Req() req: KakaoRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const kakaoLogin = await this.authService.kakaoLogin(req, res);
+    return kakaoLogin;
   }
 }

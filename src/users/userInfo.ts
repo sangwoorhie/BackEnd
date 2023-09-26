@@ -6,6 +6,7 @@ export enum Gender {
 export enum Provider {
   LOCAL = 'local',
   GOOGLE = 'google',
+  KAKAO = 'kakao',
 }
 
 export enum Status {

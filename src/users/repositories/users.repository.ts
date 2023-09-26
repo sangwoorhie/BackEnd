@@ -5,6 +5,9 @@ import { Gender, Status } from '../userInfo';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
+  findOneOrCreate(email: string) {
+    throw new Error('Method not implemented.');
+  }
   constructor(private readonly dataSource: DataSource) {
     super(User, dataSource.createEntityManager());
   }

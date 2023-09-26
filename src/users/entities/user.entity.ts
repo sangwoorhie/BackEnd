@@ -26,7 +26,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar', { length: 30 })
+  @Column('varchar', { length: 20 })
   name: string;
 
   @Column('date')
@@ -35,7 +35,7 @@ export class User {
   @Column('varchar')
   email: string;
 
-  @Column('varchar', { length: 100, nullable: true })
+  @Column('varchar', { length: 50, nullable: true })
   @IsOptional()
   password: string;
 

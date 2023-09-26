@@ -24,10 +24,22 @@ jobs:
 
       - name: ⚙️ 환경변수를 설정합니다.
         working-directory: ./
+        env:
+          DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+          DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+          DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+          JWT_ACCESS_TOKEN_SECRET: ${{ secrets.JWT_ACCESS_TOKEN_SECRET }}
         run: |
           pwd
           touch .env
-          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+          echo "DATABASE_HOST=$DATABASE_HOST" >> .env
+          echo "DATABASE_PORT=$DATABASE_PORT" >> .env
+          echo "DATABASE_USERNAME=$DATABASE_USERNAME" >> .env
+          echo "DATABASE_PASSWORD=$DATABASE_PASSWORD" >> .env
+          echo "DATABASE_NAME=$DATABASE_NAME" >> .env
+          echo "JWT_ACCESS_TOKEN_SECRET=$JWT_ACCESS_TOKEN_SECRET" >> .env
           cat .env
 
       - name: ✨ 패키지 설치

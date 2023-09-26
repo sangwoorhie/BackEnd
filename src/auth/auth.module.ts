@@ -17,6 +17,7 @@ import { UsersModule } from 'src/users/users.module';
 import { AwsService } from 'src/aws.service';
 import { ChallengesModule } from 'src/challenges/challenges.module';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { KakaoStrategy } from './strategies/kakao.strategy';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     FollowsRepository,
     AwsService,
     GoogleStrategy,
+    KakaoStrategy,
   ],
   exports: [AuthService, JwtModule],
 })

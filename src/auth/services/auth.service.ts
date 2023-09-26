@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import {
   BadGatewayException,
+  BadRequestException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -11,10 +12,11 @@ import { User } from 'src/users/entities/user.entity';
 import { UserRepository } from 'src/users/repositories/users.repository';
 import { UserService } from 'src/users/services/users.service';
 import { Provider } from 'src/users/userInfo';
-import { GoogleRequest } from '../auth.interface';
+import { GoogleRequest, KakaoRequest } from '../auth.interface';
 import { GoogleDto } from './../dto/googleLogin.dto';
 import { Response } from 'express';
 import * as cookie from 'cookie';
+import { KakaoDto } from '../dto/kakaoLogin.dto';
 
 @Injectable()
 export class AuthService {
@@ -66,7 +68,6 @@ export class AuthService {
       domain: 'localhost',
       path: '/',
       httpOnly: true,
-      maxAge: 60 * 60 * 24,
     };
   }
 
@@ -85,34 +86,7 @@ export class AuthService {
       domain: 'localhost',
       path: '/',
       httpOnly: true,
-      maxAge: 60 * 60 * 24,
     };
-  }
-
-  // 로그아웃
-  logout() {
-    return {
-      accessOption: {
-        domain: 'localhost',
-        path: '/',
-        httpOnly: true,
-        maxAge: 0,
-      },
-      refreshOption: {
-        domain: 'localhost',
-        path: '/',
-        httpOnly: true,
-        maxAge: 0,
-      },
-    };
-  }
-
-  // 토큰 제거
-  async removeRefreshToken(userId: number) {
-    const logout = await this.userRepository.update(userId, {
-      refreshToken: null,
-    });
-    return logout;
   }
 
   // Refresh 토큰 set, hash처리
@@ -141,7 +115,7 @@ export class AuthService {
 
       const findUser = await this.userRepository.getUserByEmail(email);
       if (findUser && findUser.provider === Provider.LOCAL) {
-        throw new BadGatewayException(
+        throw new BadRequestException(
           '현재 계정으로 가입한 이메일이 존재합니다.',
         );
       }
@@ -198,7 +172,79 @@ export class AuthService {
       };
     } catch (error) {
       console.log(error);
-      throw new NotAcceptableException('구글 로그인에 실패하였습니다.');
+      throw new Error('구글 로그인에 실패하였습니다.');
+    }
+  }
+
+  // 카카오 로그인
+  async kakaoLogin(req: KakaoRequest, res: Response): Promise<KakaoDto> {
+    try {
+      const {
+        user: { email, name },
+      } = req;
+      let accessToken: string;
+      let refreshToken: string;
+
+      const findUser = await this.userRepository.getUserByEmail(email);
+      if (findUser && findUser.provider === Provider.LOCAL) {
+        throw new BadRequestException(
+          '현재 계정으로 가입한 이메일이 존재합니다.',
+        );
+      }
+      if (!findUser) {
+        const kakaoUser = this.userRepository.create({
+          email,
+          name,
+          provider: Provider.KAKAO,
+        });
+        await this.userRepository.save(kakaoUser);
+        const kakaoUserPayload = { id: kakaoUser.id };
+        accessToken = this.jwtService.sign(kakaoUserPayload, {
+          secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+          expiresIn: +this.configService.get(
+            'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+          ),
+        });
+        refreshToken = this.jwtService.sign(kakaoUserPayload, {
+          secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+          expiresIn: +this.configService.get(
+            'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
+          ),
+        });
+        res.cookie('refreshToken', refreshToken, {
+          expires: new Date(
+            Date.now() +
+              +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+          ),
+          httpOnly: true,
+        });
+        return {
+          accessToken,
+        };
+      }
+      // 카카오 가입이 되어있는경우
+      const findUserPayload = { id: findUser.id };
+      accessToken = this.jwtService.sign(findUserPayload, {
+        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+        expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+      });
+      refreshToken = this.jwtService.sign(findUserPayload, {
+        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+      });
+      res.cookie('refreshToken', refreshToken, {
+        expires: new Date(
+          Date.now() +
+            +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        ),
+        httpOnly: true,
+      });
+      return {
+        accessToken,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new Error('카카오 로그인에 실패하였습니다.');
     }
   }
 }

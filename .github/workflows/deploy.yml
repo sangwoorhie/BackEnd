@@ -103,5 +103,5 @@ jobs:
           --ignore-application-stop-failures
           --application-name Code-Deploy
           --deployment-config-name CodeDeployDefault.OneAtATime
-          --deployment-group-name dev
+          --deployment-group-name OutBody-Server
           --s3-location bucket=wildbody,bundleType=zip,key=wildbody.zip

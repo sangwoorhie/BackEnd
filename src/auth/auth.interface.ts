@@ -13,3 +13,9 @@ type KakaoUser = {
 };
 
 export type KakaoRequest = Request & { user: KakaoUser };
+
+// payload
+export type Payload = {
+  id: number;
+  email: string;
+};

@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../services/auth.service';
 import { Response } from 'express';
 import { GoogleRequest, KakaoRequest } from '../auth.interface';
+import { KakaoAuthGuard } from '../guard/kakao.auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -26,35 +27,37 @@ export class AuthController {
     return { userId, status, accessToken, refreshToken };
   }
 
-  // // 구글 로그인
-  // @Get()
-  // @UseGuards(AuthGuard('google'))
-  // async googleAuth(@Req() _req: Request) {}
+  // 구글 로그인
+  @Get()
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() _req: Request) {}
 
-  // // 구글 콜백
-  // @Get('callback')
-  // @UseGuards(AuthGuard('google'))
-  // async googleAuthCallback(
-  //   @Req() req: GoogleRequest,
-  //   @Res({ passthrough: true }) res: Response,
-  // ) {
-  //   const googleLogin = await this.authService.googleLogin(req, res);
-  //   return googleLogin;
-  // }
+  // 구글 콜백
+  @Get('/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(
+    @Req() req: GoogleRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const googleLogin = await this.authService.googleLogin(req, res);
+    return googleLogin;
+  }
 
-  // // 카카오 로그인
-  // @Get()
-  // @UseGuards(AuthGuard('kakao'))
-  // async KakaoAuth(@Req() _req: Request) {}
+  // 카카오 로그인
+  @Get('/kakao/login')
+  @UseGuards(KakaoAuthGuard)
+  async loginKakao() {}
 
-  // // 카카오 콜백
-  // @Get('callback')
-  // @UseGuards(AuthGuard('kakao'))
-  // async KakaoAuthCallback(
-  //   @Req() req: KakaoRequest,
-  //   @Res({ passthrough: true }) res: Response,
-  // ) {
-  //   const kakaoLogin = await this.authService.kakaoLogin(req, res);
-  //   return kakaoLogin;
-  // }
+  @Get('/kakao/login/callback')
+  @UseGuards(KakaoAuthGuard)
+  async callback(@Req() req: KakaoRequest, @Res() res: Response) {
+    const user = req.user;
+    const token = await this.authService.generateJWT(user);
+    res.cookie('Authorization', `Bearer ${token}`, {
+      // secure: true, // HTTPS 사용 시 활성화
+      // maxAge: 1000 * 60 * 60 * 24 * 7, // 쿠키 유효 기간 설정 (예: 1주일)
+    });
+    const kakaoLogin = await this.authService.kakaoLogin(req, res);
+    return res.redirect(`http://outbody.store/`);
+  }
 }

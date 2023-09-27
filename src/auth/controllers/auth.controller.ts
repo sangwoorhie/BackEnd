@@ -6,16 +6,21 @@ import {
   Req,
   Res,
   Header,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../services/auth.service';
 import { Response } from 'express';
 import { GoogleRequest, KakaoRequest } from '../auth.interface';
-import { GoogleAuthGuard, KakaoAuthGuard } from '../guard/social.auth.guard.ts';
+import { GoogleAuthGuard, KakaoAuthGuard } from '../guard/social.auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   // 로컬 로그인
   // POST http://localhost:3000/auth/login
@@ -81,7 +86,7 @@ export class AuthController {
   }
 
   //----------------카카오 서버에서 받아오는 요청 ---------------//
-  @Get('kakao/login/callback')
+  @Get('https://kauth.kakao.com/oauth/authorize')
   @Header('Content-Type', 'text/html')
   async kakaoLoginLogicRedirect(@Query() qs, @Res() res) {
     console.log(qs.code); // server가 code를 줌

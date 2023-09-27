@@ -294,4 +294,12 @@ export class UserService {
     const pageinatedUsers = allUsers.slice(startIndex, endIndex);
     return { totalPages, pageinatedUsers };
   }
+
+  // 카카오 회원추가
+  async createKakaoUser(user) {
+    await this.userRepository.insert({
+      email: user.email,
+      name: user.nickName,
+    });
+  }
 }

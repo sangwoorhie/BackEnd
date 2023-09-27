@@ -7,9 +7,9 @@ import { AuthService } from '../services/auth.service';
 export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
   constructor(private readonly authService: AuthService) {
     super({
-      clientID: process.env.KAKAO_ID,
-      clientSecret: process.env.KAKAO_PW,
-      callbackURL: process.env.KAKAO_REDIRECT,
+      clientID: '119d1ffdd9c1fa47cf09708aa7d536f8', //process.env.KAKAO_ID,
+      clientSecret: 't42CyTFssiCRVJXo5UnEG9HnvznmERbQ', //process.env.KAKAO_PW,
+      callbackURL: 'http://outbody.store/auth/google/login/callback', //process.env.KAKAO_REDIRECT,
     });
   }
 

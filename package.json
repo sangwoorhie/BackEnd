@@ -45,6 +45,7 @@
     "@nestjs/platform-socket.io": "^10.2.1",
     "@nestjs/platform-ws": "^10.2.1",
     "@nestjs/schedule": "^3.0.2",
+    "@nestjs/swagger": "^7.1.12",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.1",
     "@socket.io/redis-adapter": "^8.2.1",
@@ -79,6 +80,7 @@
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
+    "swagger-ui-express": "^5.0.0",
     "typeorm": "^0.3.17",
     "update": "^0.7.4"
   },

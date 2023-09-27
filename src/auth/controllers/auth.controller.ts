@@ -3,7 +3,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../services/auth.service';
 import { Response } from 'express';
 import { GoogleRequest, KakaoRequest } from '../auth.interface';
-import { KakaoAuthGuard } from '../guard/kakao.auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -28,12 +27,12 @@ export class AuthController {
   }
 
   // 구글 로그인
-  @Get()
+  @Get('/google/login')
   @UseGuards(AuthGuard('google'))
   async googleAuth(@Req() _req: Request) {}
 
   // 구글 콜백
-  @Get('/callback')
+  @Get('/google/login/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(
     @Req() req: GoogleRequest,
@@ -45,19 +44,17 @@ export class AuthController {
 
   // 카카오 로그인
   @Get('/kakao/login')
-  @UseGuards(KakaoAuthGuard)
-  async loginKakao() {}
+  @UseGuards(AuthGuard('kakao'))
+  async KakaoAuth(@Req() _req: Request) {}
 
+  // 카카오 콜백
   @Get('/kakao/login/callback')
-  @UseGuards(KakaoAuthGuard)
-  async callback(@Req() req: KakaoRequest, @Res() res: Response) {
-    const user = req.user;
-    const token = await this.authService.generateJWT(user);
-    res.cookie('Authorization', `Bearer ${token}`, {
-      // secure: true, // HTTPS 사용 시 활성화
-      // maxAge: 1000 * 60 * 60 * 24 * 7, // 쿠키 유효 기간 설정 (예: 1주일)
-    });
+  @UseGuards(AuthGuard('kakao'))
+  async KakaoAuthCallback(
+    @Req() req: KakaoRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const kakaoLogin = await this.authService.kakaoLogin(req, res);
-    return res.redirect(`http://outbody.store/`);
+    return kakaoLogin;
   }
 }

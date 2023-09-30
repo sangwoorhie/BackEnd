@@ -16,6 +16,7 @@ import { GoogleRequest, KakaoRequest } from '../auth.interface';
 import { GoogleDto } from '../dto/googleLogin.dto';
 import { Response } from 'express';
 import { KakaoDto } from '../dto/kakaoLogin.dto';
+import { Payload } from '../auth.interface';
 
 @Injectable()
 export class AuthService {
@@ -41,9 +42,6 @@ export class AuthService {
       return user;
     }
 
-    console.log('user.password', user.password);
-    console.log('user', user);
-    console.log('password', password);
     const comparedPassword = await compare(password, user.password);
     if (!comparedPassword) {
       console.log('comparedPassword', comparedPassword);
@@ -186,94 +184,27 @@ export class AuthService {
     return access_Token;
   }
 
-  // 카카오 로그인
-  async oauthLogin(url: string, headers: any) {
-    // server가 받은 code를 가지고 owner의 정보를 다시 전달
-    const response = await lastValueFrom(this.http.post(url, '', { headers }));
-    const authData = response.data;
-    const userResponse = await lastValueFrom(
-      this.http.get('https://kapi.kakao.com/v2/user/me', {
-        headers: {
-          Authorization: `Bearer ${authData.access_Token}`,
-        },
-      }),
-    );
-    const userData = userResponse.data;
-    const userInfo = {
-      nickname: userData.kakao_account.profile.nickname,
-      email: userData.kakao_account.email,
-    };
-    return await this.userService.createKakaoUser(userInfo);
+  // 카카오 로그인, JWT 생성
+  async generateJWT(user: any): Promise<string> {
+    const payload: Payload = { id: user.id, email: user.email };
+    return this.jwtService.sign(payload);
   }
 
-  // async kakaoLogin(req: KakaoRequest, res: Response): Promise<KakaoDto> {
-  //   try {
-  //     const {
-  //       user: { email, name },
-  //     } = req;
-  //     let accessToken: string;
-  //     let refreshToken: string;
-
-  //     const findUser = await this.userRepository.getUserByEmail(email);
-  //     if (findUser && findUser.provider === Provider.LOCAL) {
-  //       throw new BadRequestException(
-  //         '현재 계정으로 가입한 이메일이 존재합니다.',
-  //       );
-  //     }
-  //     if (!findUser) {
-  //       const kakaoUser = this.userRepository.create({
-  //         email,
-  //         name,
-  //         provider: Provider.KAKAO,
-  //       });
-  //       await this.userRepository.save(kakaoUser);
-  //       const kakaoUserPayload = { id: kakaoUser.id };
-  //       accessToken = this.jwtService.sign(kakaoUserPayload, {
-  //         secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
-  //         expiresIn: +this.configService.get(
-  //           'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
-  //         ),
-  //       });
-  //       refreshToken = this.jwtService.sign(kakaoUserPayload, {
-  //         secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
-  //         expiresIn: +this.configService.get(
-  //           'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
-  //         ),
-  //       });
-  //       res.cookie('refreshToken', refreshToken, {
-  //         expires: new Date(
-  //           Date.now() +
-  //             +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
-  //         ),
-  //         httpOnly: true,
-  //       });
-  //       return {
-  //         accessToken,
-  //       };
-  //     }
-  //     // 카카오 가입이 되어있는경우
-  //     const findUserPayload = { id: findUser.id };
-  //     accessToken = this.jwtService.sign(findUserPayload, {
-  //       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
-  //       expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
-  //     });
-  //     refreshToken = this.jwtService.sign(findUserPayload, {
-  //       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
-  //       expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
-  //     });
-  //     res.cookie('refreshToken', refreshToken, {
-  //       expires: new Date(
-  //         Date.now() +
-  //           +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
-  //       ),
-  //       httpOnly: true,
-  //     });
-  //     return {
-  //       accessToken,
-  //     };
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new Error('카카오 로그인에 실패하였습니다.');
-  //   }
-  // }
+  async kakaoLogin(email: string, name: string): Promise<any> {
+    const findUser = await this.userRepository.getUserByEmail(email);
+    if (findUser && findUser.provider === Provider.LOCAL) {
+      throw new BadRequestException(
+        '현재 계정으로 가입한 이메일이 존재합니다.',
+      );
+    }
+    if (!findUser) {
+      const kakaoUser = this.userRepository.create({
+        email,
+        name,
+        provider: Provider.KAKAO,
+      });
+      await this.userRepository.save(kakaoUser);
+      return kakaoUser;
+    }
+  }
 }

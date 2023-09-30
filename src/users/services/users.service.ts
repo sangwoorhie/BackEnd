@@ -297,7 +297,7 @@ export class UserService {
 
   // 카카오 회원추가
   async createKakaoUser(user) {
-    await this.userRepository.insert({
+    await this.usersRepository.insert({
       email: user.email,
       name: user.nickName,
     });

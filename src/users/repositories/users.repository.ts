@@ -39,6 +39,15 @@ export class UserRepository extends Repository<User> {
     return user;
   }
 
+  // 유저정보 비밀번호로 조회
+  async confirmAdmin(password: string): Promise<User | null> {
+    const user = await this.createQueryBuilder('user')
+      .where('user.password = :password', { password })
+      .getOne();
+
+    return user;
+  }
+
   // 사용자 정보 조회
   async getUserById(userId: number): Promise<User> {
     const user = await this.createQueryBuilder('user')

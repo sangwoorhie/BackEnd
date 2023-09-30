@@ -21,6 +21,7 @@ import { UserRecommendationDto } from '../dto/recommendation.dto';
 import { SignoutDto } from '../dto/user.signout.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { cache } from '../cache/user.cache';
+import { ConfirmPasswordDto } from '../dto/confirmPw.dto';
 
 @Controller('user')
 export class UserController {
@@ -145,5 +146,15 @@ export class UserController {
       pageSize,
     );
   }
+
+  // 비밀번호를 입력하여 관리자 확인
+  // Post http://localhost:3000/user/me/admin
+  @Post('/me/admin')
+  async confirmAdmin(
+    @Body() confirmPasswordDto: ConfirmPasswordDto,
+    @Req() req: any,
+  ) {
+    await this.userService.confirmAdmin(req.user, confirmPasswordDto);
+    return req.user.status;
+  }
 }
-//

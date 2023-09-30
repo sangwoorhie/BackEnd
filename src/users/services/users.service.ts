@@ -24,6 +24,7 @@ import { ChallengersRepository } from 'src/challenges/repositories/challengers.r
 import { Status } from 'src/users/userInfo';
 import { Challenger } from 'src/challenges/entities/challenger.entity';
 import * as nodemailer from 'nodemailer';
+import { ConfirmPasswordDto } from '../dto/confirmPw.dto';
 
 @Injectable()
 export class UserService {
@@ -301,5 +302,25 @@ export class UserService {
       email: user.email,
       name: user.nickName,
     });
+  }
+
+  // 비밀번호로 관리자 조회
+  async confirmAdmin(user, confirmPasswordDto: ConfirmPasswordDto) {
+    const { password } = confirmPasswordDto;
+
+    const admin = await this.usersRepository.confirmAdmin(password);
+
+    if (!password) {
+      throw new BadRequestException('비밀번호를 입력해주세요.');
+    } else if (password !== admin.password) {
+      throw new UnauthorizedException('password가 일치하지 않습니다.');
+    }
+
+    if (admin.status !== 'admin') {
+      throw new UnauthorizedException('해당 기능에 대한 접근권한이 없습니다.');
+    }
+    if (admin.status === 'admin') {
+      return admin;
+    }
   }
 }

@@ -62,6 +62,10 @@ export class AppModule implements NestModule {
         { path: 'user/signup/email', method: RequestMethod.POST },
         { path: 'user/signup', method: RequestMethod.POST },
         { path: 'blacklist/withdraw', method: RequestMethod.DELETE },
+        { path: 'auth/kakao/login', method: RequestMethod.GET },
+        { path: 'auth/kakao/login/callback', method: RequestMethod.GET },
+        { path: 'auth/google/login', method: RequestMethod.GET },
+        { path: 'auth/google/login/callback', method: RequestMethod.GET },
       )
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }

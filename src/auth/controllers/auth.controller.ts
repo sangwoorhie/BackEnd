@@ -66,10 +66,11 @@ export class AuthController {
   async callback(@Req() req, @Res() res) {
     const user = req.user;
     const token = await this.authService.generateJWT(user);
+    console.log('token', token);
     res.cookie('Authorization', `Bearer ${token}`, {
       // secure: true, // HTTPS 사용 시 활성화
       // maxAge: 1000 * 60 * 60 * 24 * 7, // 쿠키 유효 기간 설정 (예: 1주일)
     });
-    return res.redirect(`http://outbody.store`);
+    return res.redirect(`http://localhost:3001`); //`http://outbody.store`
   }
 }

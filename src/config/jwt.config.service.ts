@@ -1,17 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtModuleOptions, JwtOptionsFactory } from '@nestjs/jwt';
 
 @Injectable()
-export class JwtConfigService implements JwtOptionsFactory {
+export class JwtConfigService {
   constructor(private readonly configService: ConfigService) {}
 
-  createJwtOptions(): JwtModuleOptions {
+  createJwtOptions() {
     return {
       secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
-      signOptions: {
-        expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
-      },
+      expiresIn: this.configService.get<string>(
+        'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+      ),
+    };
+  }
+
+  createRefreshTokenOptions() {
+    return {
+      secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+      expiresIn: this.configService.get<string>(
+        'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
+      ),
     };
   }
 }

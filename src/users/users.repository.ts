@@ -1,0 +1,171 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { User } from '../entities/user.entity';
+import { DataSource, Repository } from 'typeorm';
+import { Gender } from './userInfo';
+
+@Injectable()
+export class UserRepository extends Repository<User> {
+  // findOneOrCreate(email: string) {
+  //   throw new Error('Method not implemented.');
+  // }
+  constructor(private readonly dataSource: DataSource) {
+    super(User, dataSource.createEntityManager());
+  }
+
+  //회원가입
+  async createUser(
+    name: string,
+    email: string,
+    password: string,
+    gender: string,
+    birthday: string,
+  ): Promise<User> {
+    const newUser = this.create({
+      name,
+      email,
+      password,
+      gender: gender as Gender,
+      birthday,
+    });
+    return await this.save(newUser);
+  }
+
+  //email로 유저 정보조회
+  async getUserByEmail(email: string) {
+    const user = await this.findOne({
+      where: { email },
+    });
+    return user;
+  }
+
+  // 유저정보 비밀번호로 조회
+  async confirmAdmin(password: string): Promise<User | null> {
+    const user = await this.createQueryBuilder('user')
+      .where('user.password = :password', { password })
+      .getOne();
+
+    return user;
+  }
+
+  // 사용자 정보 조회
+  async getUserById(userId: number): Promise<User> {
+    const user = await this.createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.name',
+        'user.birthday',
+        'user.gender',
+        'user.imgUrl',
+        'user.description',
+        'user.point',
+        'user.isInChallenge',
+        'user.latestChallengeDate',
+      ])
+      .where('user.id = :id', { id: userId })
+      .getOne();
+    return user;
+  }
+
+  // 내 정보 수정
+  async updateUser(
+    userId: number,
+    imgUrl: string,
+    birthday: string | Date,
+    description: string,
+    name: string,
+  ) {
+    await this.update({ id: userId }, { imgUrl, birthday, description, name });
+
+    const result = await this.findOne({ where: { id: userId } });
+    return result;
+  }
+
+  // 사용자 도전 참여 여부 수정
+  async updateUserIsInChallenge(userId: number, isInChallenge: boolean) {
+    const result = await this.update({ id: userId }, { isInChallenge });
+    return result;
+  }
+
+  // 사용자 점수 수정
+  async updateUserPoint(userId: number, point: number) {
+    const result = await this.update({ id: userId }, { point });
+    return result;
+  }
+
+  //비밀번호 수정
+  async updatePassword(id, newPassword) {
+    const result = await this.update({ id }, { password: newPassword });
+    return result;
+  }
+
+  //회원 탈퇴와 동시에 팔로우 , 팔로잉, 나의 도전 목록들 삭제
+  async deleteUser(userId: number): Promise<any> {
+    const deleteUserResult = await this.softDelete({ id: userId });
+
+    return deleteUserResult;
+  }
+
+  // 유저 전체목록
+  async getAllUsers(userId: number): Promise<User[]> {
+    const users = await this.createQueryBuilder('user')
+      .where('user.id != :userId', { userId })
+      .andWhere('user.deletedAt IS NULL')
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('follow.followId')
+          .from('follows', 'follow')
+          .where('follow.userId = :userId')
+          .getQuery();
+        return `user.id NOT IN ${subQuery}`;
+      })
+      .getMany();
+
+    return users;
+  }
+
+  //유저 포인트 랭크 조회
+  async getAllUsersForRank() {
+    const result = await this.find({
+      order: { point: 'DESC' },
+    });
+    return result;
+  }
+
+  //동일 성별, 나이대의 모든 유저 조회
+  async getUsersForAverage(years: number, gender: string) {
+    const result = await this.createQueryBuilder('user')
+      .where('YEAR(user.birthday) = :years', { years })
+      .andWhere('user.gender = :gender', { gender })
+      .getMany();
+    return result;
+  }
+
+  // 관리자 권한 모든 유저조회
+  async getAllregisters(): Promise<User[]> {
+    return await this.find({
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  // 관리자 권한 블랙리스트 유저 강제탈퇴
+  async withdrawUser(email: string): Promise<any> {
+    const userToDelete = await this.findOne({ where: { email } });
+
+    const userId = userToDelete.id;
+    const deleteUser = await this.softDelete({ id: userId });
+    return deleteUser;
+  }
+
+  // 로그아웃
+  async removeRefreshToken(email: string): Promise<void> {
+    const user = await this.getUserByEmail(email);
+    if (user) {
+      user.refreshToken = null;
+      await this.save(user);
+    } else {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+  }
+}

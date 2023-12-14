@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from 'src/users/repositories/users.repository';
+import { UserRepository } from 'src/users/users.repository';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
@@ -13,6 +13,7 @@ export class AuthMiddleware implements NestMiddleware {
     private userRepository: UserRepository,
   ) {}
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   async use(req: any, res: any, next: Function) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {

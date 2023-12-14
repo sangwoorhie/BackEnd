@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ReportsService } from './services/reports.service';
-import { ReportsController } from './controllers/reports.controller';
+import { ReportsService } from './reports.service';
+import { ReportsController } from './reports.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Report } from './entities/report.entity';
-import { ReportsRepository } from './repositories/reports.repository';
-import { BlackList } from './entities/blacklist.entity';
-import { BlackListRepository } from '../blacklists/repository/blacklist.repository';
+import { Report } from '../entities/report.entity';
+import { ReportsRepository } from './reports.repository';
+import { BlackList } from 'src/entities/blacklist.entity';
+import { BlackListRepository } from '../blacklists/blacklist.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Report, BlackList])],

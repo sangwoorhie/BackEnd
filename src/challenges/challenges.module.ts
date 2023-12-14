@@ -1,24 +1,24 @@
-import { Challenger } from 'src/challenges/entities/challenger.entity';
+import { Challenger } from 'src/entities/challenger.entity';
 import { Logger, Module } from '@nestjs/common';
-import { ChallengesController } from './controllers/challenges.controller';
-import { ChallengesService } from './services/challenges.service';
+import { ChallengesController } from './challenges.controller';
+import { ChallengesService } from './challenges.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Challenge } from './entities/challenge.entity';
-import { ChallengesRepository } from './repositories/challenges.repository';
-import { ChallengeScheduler } from './services/challenges.scheduler';
-import { UserRepository } from 'src/users/repositories/users.repository';
-import { Follow } from 'src/follows/entities/follow.entity';
-import { User } from 'src/users/entities/user.entity';
-import { GoalsRepository } from './repositories/goals.repository';
-import { ChallengersRepository } from './repositories/challengers.repository';
-import { FollowsRepository } from 'src/follows/repositories/follows.repository';
+import { Challenge } from '../entities/challenge.entity';
+import { ChallengesRepository } from './challenges.repository';
+import { ChallengeScheduler } from './challenges.scheduler';
+import { UserRepository } from 'src/users/users.repository';
+import { Follow } from 'src/entities/follow.entity';
+import { User } from 'src/entities/user.entity';
+import { GoalsRepository } from './goals.repository';
+import { ChallengersRepository } from './challengers.repository';
+import { FollowsRepository } from 'src/follows/follows.repository';
 import { ScheduleModule } from '@nestjs/schedule';
-import { PostsRepository } from 'src/posts/repositories/posts.repository';
-import { RecordsRepository } from 'src/records/repositories/records.repository';
-import { InviteChallenge } from './entities/inviteChallenge.entity';
-import { InviteChallengesRepository } from './repositories/inviteChalleges.repository';
-import { Notification } from './entities/notification.entity';
-import { NotificationsRepository } from './repositories/notifications.repository';
+import { PostsRepository } from 'src/posts/posts.repository';
+import { RecordsRepository } from 'src/records/records.repository';
+import { InviteChallenge } from '../entities/inviteChallenge.entity';
+import { InviteChallengesRepository } from './inviteChalleges.repository';
+import { Notification } from '../entities/notification.entity';
+import { NotificationsRepository } from './notifications.repository';
 
 @Module({
   imports: [

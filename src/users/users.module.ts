@@ -1,13 +1,13 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { UserController } from './controllers/users.controller';
-import { UserService } from './services/users.service';
+import { UserController } from './users.controller';
+import { UserService } from './users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { UserRepository } from './repositories/users.repository';
-import { Follow } from 'src/follows/entities/follow.entity';
-import { FollowsRepository } from 'src/follows/repositories/follows.repository';
-import { BlackListRepository } from 'src/blacklists/repository/blacklist.repository';
-import { AuthService } from 'src/auth/services/auth.service';
+import { User } from '../entities/user.entity';
+import { UserRepository } from './users.repository';
+import { Follow } from 'src/entities/follow.entity';
+import { FollowsRepository } from 'src/follows/follows.repository';
+import { BlackListRepository } from 'src/blacklists/blacklist.repository';
+import { AuthService } from 'src/auth/auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -17,7 +17,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { AwsService } from 'src/aws.service';
 import { AuthsModule } from 'src/auth/auth.module';
-import { ChallengersRepository } from 'src/challenges/repositories/challengers.repository';
+import { ChallengersRepository } from 'src/challenges/challengers.repository';
 
 @Module({
   imports: [

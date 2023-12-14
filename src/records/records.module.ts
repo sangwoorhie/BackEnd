@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Record } from './entities/records.entity';
-import { RecordsController } from './controllers/records.controller';
-import { RecordsService } from './services/records.service';
-import { RecordsRepository } from './repositories/records.repository';
-import { UserRepository } from 'src/users/repositories/users.repository';
+import { Record } from '../entities/records.entity';
+import { RecordsController } from './records.controller';
+import { RecordsService } from './records.service';
+import { RecordsRepository } from './records.repository';
+import { UserRepository } from 'src/users/users.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Record])],

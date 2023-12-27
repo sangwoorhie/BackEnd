@@ -1,7 +1,8 @@
-import { Controller, Post, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, UseGuards, Req, Get, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
+import { GoogleRequest } from './auth.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -25,5 +26,21 @@ export class AuthController {
   @Post('/logout')
   async logout(@Req() req: any): Promise<void> {
     await this.authService.logout(req.email);
+  }
+
+  // 구글 로그인
+  @Get()
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() _req: Request) {}
+
+  // 구글 콜백
+  @Get('callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(
+    @Req() req: GoogleRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.googleLogin(req, res);
+    return result;
   }
 }

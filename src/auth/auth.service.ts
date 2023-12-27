@@ -1,7 +1,9 @@
 import {
+  BadGatewayException,
   HttpException,
   HttpStatus,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,6 +12,10 @@ import { compare } from 'bcrypt';
 import { User } from 'src/entities/user.entity';
 import { UserRepository } from 'src/users/users.repository';
 import { JwtConfigService } from 'src/config/jwt.config.service';
+import { GoogleRequest } from './auth.interface';
+import { GoogleDto } from './dto/googleLogin.dto';
+import { ConfigService } from '@nestjs/config';
+import { Provider } from 'src/users/userInfo';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userRepository: UserRepository,
     private readonly jwtConfigService: JwtConfigService,
+    private readonly configService: ConfigService,
   ) {}
 
   // 로그인
@@ -94,5 +101,77 @@ export class AuthService {
       return user;
     }
     return null;
+  }
+
+  // 구글 로그인
+  async googleLogin(req: GoogleRequest, res: Response): Promise<GoogleDto> {
+    try {
+      const {
+        user: { email, name },
+      } = req;
+      let accessToken: string;
+      let refreshToken: string;
+
+      const findUser = await this.userRepository.getUserByEmail(email);
+      if (findUser && findUser.provider === Provider.LOCAL) {
+        throw new BadGatewayException(
+          '현재 계정으로 가입한 이메일이 존재합니다.',
+        );
+      }
+      if (!findUser) {
+        const googleUser = this.userRepository.create({
+          email,
+          name,
+          provider: Provider.GOOGLE,
+        });
+        await this.userRepository.save(googleUser);
+        const googleUserPayload = { id: googleUser.id };
+        accessToken = this.jwtService.sign(googleUserPayload, {
+          secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+          expiresIn: +this.configService.get(
+            'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+          ),
+        });
+        refreshToken = this.jwtService.sign(googleUserPayload, {
+          secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+          expiresIn: +this.configService.get(
+            'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
+          ),
+        });
+        res.cookie('refreshToken', refreshToken, {
+          expires: new Date(
+            Date.now() +
+              +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+          ),
+          httpOnly: true,
+        });
+        return {
+          accessToken,
+        };
+      }
+      // 구글 가입이 되어있는경우
+      const findUserPayload = { id: findUser.id };
+      accessToken = this.jwtService.sign(findUserPayload, {
+        secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+        expiresIn: +this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+      });
+      refreshToken = this.jwtService.sign(findUserPayload, {
+        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+        expiresIn: +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+      });
+      res.cookie('refreshToken', refreshToken, {
+        expires: new Date(
+          Date.now() +
+            +this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+        ),
+        httpOnly: true,
+      });
+      return {
+        accessToken,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new NotAcceptableException('구글 로그인에 실패하였습니다.');
+    }
   }
 }

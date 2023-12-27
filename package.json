@@ -60,6 +60,7 @@
     "class-validator": "^0.14.0",
     "cookie": "^0.5.0",
     "cookie-parser": "^1.4.6",
+    "crossenv": "^0.0.2-security",
     "express-session": "^1.17.3",
     "handlebars": "^4.7.8",
     "hbs": "^4.2.0",
